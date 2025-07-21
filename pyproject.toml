@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mystage"
+name = "saepositionsource"
 version = "0.1.0"
 description = ""
 authors = ["flonix8 <flstanek@googlemail.com>"]
@@ -7,13 +7,17 @@ license = "AGPLv3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 pydantic = "^2.0.0"
-visionapi = { git = "https://github.com/starwit/vision-api.git", subdirectory = "python/visionapi", tag = "2.0.1" }
-visionlib = { git = "https://github.com/starwit/vision-lib.git", subdirectory = "python", tag = "0.10.0" }
+visionapi = { git = "https://github.com/starwit/vision-api.git", subdirectory = "python/visionapi", tag = "3.2.2" }
+visionlib = { git = "https://github.com/starwit/vision-lib.git", subdirectory = "python", tag = "0.12.0" }
 redis = "^5.0.0"
 pydantic-settings = "^2.0.3"
 prometheus-client = "^0.17.1"
+pynmeagps = "^1.0.50"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.4.1"
 
 [build-system]
 requires = ["poetry-core"]
