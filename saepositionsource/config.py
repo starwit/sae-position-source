@@ -9,7 +9,7 @@ from visionlib.pipeline.settings import LogLevel, YamlConfigSettingsSource
 class RedisConfig(BaseModel):
     host: str = 'localhost'
     port: Annotated[int, Field(ge=1, le=65536)] = 6379
-    stream_id: str = 'stream1'
+    stream_id: str = 'self'
     output_stream_prefix: str = 'positionsource'
 
 class GpsConfig(BaseModel):
