@@ -37,20 +37,17 @@ def run_stage():
 
     logger.info(f'Starting geo mapper stage. Config: {CONFIG.model_dump_json(indent=2)}')
 
-    sae_position_source = SaePositionSource(CONFIG)
-
     publish = RedisPublisher(CONFIG.redis.host, CONFIG.redis.port)
     
-    with publish:
+    with publish, SaePositionSource(CONFIG) as source:
         while True:
             if stop_event.is_set():
                 break
 
-            output_proto_data = sae_position_source.get()
+            output_proto_data = source.get()
 
             if output_proto_data is None:
                 continue
             
             with REDIS_PUBLISH_DURATION.time():
                 publish(f'{CONFIG.redis.output_stream_prefix}:{CONFIG.redis.stream_id}', output_proto_data)
-            

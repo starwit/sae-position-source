@@ -1,10 +1,12 @@
 import logging
-from typing import Any
+import time
+from typing import Any, Optional
 
 from prometheus_client import Counter, Histogram, Summary
-from visionapi.sae_pb2 import SaeMessage
+from visionapi.sae_pb2 import PositionMessage
 
 from .config import SaePositionSourceConfig
+from .gpsreader import GpsReader
 
 logging.basicConfig(format='%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s')
 logger = logging.getLogger(__name__)
@@ -13,33 +15,69 @@ GET_DURATION = Histogram('sae_position_source_get_duration', 'The time it takes 
                          buckets=(0.0025, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25))
 OBJECT_COUNTER = Counter('sae_position_source_object_counter', 'How many detections have been transformed')
 PROTO_SERIALIZATION_DURATION = Summary('sae_position_source_proto_serialization_duration', 'The time it takes to create a serialized output proto')
-PROTO_DESERIALIZATION_DURATION = Summary('sae_position_source_proto_deserialization_duration', 'The time it takes to deserialize an input proto')
 
 
 class SaePositionSource:
     def __init__(self, config: SaePositionSourceConfig) -> None:
         self.config = config
         logger.setLevel(self.config.log_level.value)
+        self._gps_reader = None
+        self._previous_position = None
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def __call__(self, input_proto) -> Any:
         return self.get(input_proto)
+
+    def start(self):
+        self._gps_reader = GpsReader(self.config.gps.serial_device)
     
     @GET_DURATION.time()
-    def get(self, input_proto):
-        sae_msg = self._unpack_proto(input_proto)
+    def get(self, timeout=1) -> Optional[PositionMessage]:
+        '''This method returns a new PositionMessage if a new GPS position is available.
+        If no new position is available before the timeout expires, it returns None.'''
 
-        # Your implementation goes (mostly) here
-        logger.warning('Received SAE message from pipeline')
-
-        return self._pack_proto(sae_msg)
+        if self._gps_reader is None:
+            return None
         
-    @PROTO_DESERIALIZATION_DURATION.time()
-    def _unpack_proto(self, sae_message_bytes):
-        sae_msg = SaeMessage()
-        sae_msg.ParseFromString(sae_message_bytes)
+        if not self._gps_reader.is_alive:
+            raise RuntimeError('GPS reader thread has exited')
+        
+        timeout_time = time.time() + timeout
+        
+        current_position = self._gps_reader.position
 
-        return sae_msg
-    
+        # Retry until either the position changes or the timeout expires
+        while timeout_time - time.time() > 0 and current_position == self._previous_position:
+            time.sleep(0.01)
+            current_position = self._gps_reader.position
+
+        if current_position is None or current_position == self._previous_position:
+            return None
+        
+        self._previous_position = current_position
+        
+        logger.debug(current_position)
+        
+        pos_msg = PositionMessage()
+        pos_msg.fix = current_position.fix
+        pos_msg.geo_coordinate.latitude = current_position.lat
+        pos_msg.geo_coordinate.longitude = current_position.lon
+        pos_msg.hdop = current_position.hdop
+        pos_msg.timestamp_utc_ms = current_position.timestamp_utc_ms
+
+        return self._pack_proto(pos_msg)
+        
     @PROTO_SERIALIZATION_DURATION.time()
-    def _pack_proto(self, sae_msg: SaeMessage):
-        return sae_msg.SerializeToString()
+    def _pack_proto(self, pos_msg: PositionMessage):
+        return pos_msg.SerializeToString()
+    
+    def close(self):
+        if self._gps_reader is not None:
+            self._gps_reader.close()
+            self._gps_reader = None

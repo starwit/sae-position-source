@@ -506,6 +506,21 @@ deploy = ["build", "pip", "setuptools (>=66.0)", "wheel"]
 test = ["Sphinx", "bandit", "black", "isort", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme"]
 
 [[package]]
+name = "pyserial"
+version = "3.5"
+description = "Python Serial Port Extension"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0"},
+    {file = "pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb"},
+]
+
+[package.extras]
+cp2110 = ["hidapi"]
+
+[[package]]
 name = "pytest"
 version = "8.4.1"
 description = "pytest: simple powerful testing with Python"
@@ -667,7 +682,7 @@ typing-extensions = ">=4.12.0"
 
 [[package]]
 name = "visionapi"
-version = "3.2.2"
+version = "3.3.0"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -681,8 +696,8 @@ protobuf = "6.31.1"
 [package.source]
 type = "git"
 url = "https://github.com/starwit/vision-api.git"
-reference = "3.2.2"
-resolved_reference = "e66d756824cd63b7c357e2c11afe840a0f3c193e"
+reference = "1db3c47"
+resolved_reference = "1db3c47686be231cbfbed812bdf0439b48a90e4a"
 subdirectory = "python/visionapi"
 
 [[package]]
@@ -714,4 +729,4 @@ subdirectory = "python"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "504f09f440bbbc3b5806dc81c56f98946facdca0ac698349d376691649fdf31b"
+content-hash = "b443c607a95580b072921fec146472e369b30e90ce791143ed2c4f44675a9b95"

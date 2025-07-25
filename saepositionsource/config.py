@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Annotated
@@ -10,9 +12,13 @@ class RedisConfig(BaseModel):
     stream_id: str = 'stream1'
     output_stream_prefix: str = 'positionsource'
 
+class GpsConfig(BaseModel):
+    serial_device: Path
+
 class SaePositionSourceConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
+    gps: GpsConfig
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')
