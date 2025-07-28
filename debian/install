@@ -1,0 +1,7 @@
+settings.yaml /etc/starwit/positionsource
+main.py /opt/starwit/positionsource
+
+requirements.txt /opt/starwit/positionsource
+positionsource /opt/starwit/positionsource
+
+debian/positionsource.service /usr/lib/systemd/system/
