@@ -1,0 +1,13 @@
+[Unit]
+Description=SAE Position Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/starwit/positionsource
+ExecStart=/usr/local/bin/positionsource
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+# Install Python packages that aren't available via APT
+if [ "$1" = "configure" ]; then
+
+    echo "Create virtual environment for application"
+    cd "/opt/starwit/positionsource"
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt 
+
+    echo "Create wrapper script"
+    mkdir -p /usr/local/bin
+    cat > /usr/local/bin/positionsource <<EOF
+#!/bin/bash
+
+current_dir=$PWD
+cd /opt/starwit/positionsource
+source .venv/bin/activate
+
+python main.py "\$@"
+cd $current_dir
+EOF
+    chmod +x /usr/local/bin/positionsource    
+
+    # link settings file from etc
+    cd /opt/starwit/positionsource
+    ln -s /etc/starwit/positionsource/settings.yaml settings.yaml
+
+    systemctl daemon-reload
+    systemctl start positionsource.service        
+    systemctl enable positionsource.service
+fi
+
+#DEBHELPER#
+
+exit 0
