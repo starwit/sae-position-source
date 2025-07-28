@@ -1,4 +1,4 @@
-positionsource (0.1.0) unstable; urgency=medium
+positionsource (###RELEASE_VERSION###) unstable; urgency=medium
 
   * Initial Release
 
