@@ -7,6 +7,7 @@ from visionapi.sae_pb2 import PositionMessage
 
 from .config import SaePositionSourceConfig
 from .gpsreader import GpsReader
+from .staticreader import StaticReader
 
 logging.basicConfig(format='%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s')
 logger = logging.getLogger(__name__)
@@ -35,7 +36,13 @@ class SaePositionSource:
         return self.get(input_proto)
 
     def start(self):
-        self._gps_reader = GpsReader(self.config.gps.serial_device)
+        logger.debug("Selecting dynamic/static reader " + str(self.config.position_data_source.type))
+        if self.config.position_data_source.type == 'static':
+            self._gps_reader = StaticReader(self.config.position_data_source.gps_source.lat,
+                                            self.config.position_data_source.gps_source.long)
+        if self.config.position_data_source.type == 'dynamic':
+            self._gps_reader = GpsReader(self.config.position_data_source.gps_source.serial_device)
+        logger.debug(self._gps_reader.position)
     
     @GET_DURATION.time()
     def get(self, timeout=1) -> Optional[PositionMessage]:

@@ -1,3 +1,5 @@
+
+import enum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -12,13 +14,22 @@ class RedisConfig(BaseModel):
     stream_id: str = 'self'
     output_stream_prefix: str = 'positionsource'
 
-class GpsConfig(BaseModel):
-    serial_device: Path
+class GPSSourceConfig(BaseModel):
+    serial_device: Path = Path('/dev/ttyACM0')
+    long: float = 0.0
+    lat: float = 0.0
+
+class GPSConfig(BaseModel):
+    serial_device: Path = Path('/dev/ttyACM0')
+
+class PositionDataSourceConfig(BaseModel):
+    type: str = 'static'
+    gps_source: GPSSourceConfig = Field(default_factory=GPSSourceConfig)
 
 class SaePositionSourceConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
-    gps: GpsConfig
+    position_data_source: PositionDataSourceConfig
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')
