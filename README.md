@@ -1,5 +1,5 @@
 # SAE Position Source
-Reads from a GPS receiver and outputs a stream of position messages.
+This component provides geographical location for an SAE instance. It sends either a statically configured position, or reads from an USB GPS device.
 
 ## Prerequisites
 - python 3.11, you can switch between python versions with pyenv:
