@@ -3,6 +3,7 @@ import time
 from typing import Any, Optional
 
 from prometheus_client import Counter, Histogram, Summary
+from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import PositionMessage
 
 from .config import SaePositionSourceConfig
@@ -70,6 +71,7 @@ class SaePositionSource:
         pos_msg.geo_coordinate.longitude = current_position.lon
         pos_msg.hdop = current_position.hdop
         pos_msg.timestamp_utc_ms = current_position.timestamp_utc_ms
+        pos_msg.type = MessageType.POSITION
 
         return self._pack_proto(pos_msg)
         
