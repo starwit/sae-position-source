@@ -1,9 +1,10 @@
-position_data_source:
-  type: dynamic # if static/dynamic
-  gps_source:
-    serial_device: /dev/ttyACM0 # source of GPS sensor to read from
-    long: 10.717014996081113 # longitude of static location
-    lat: 52.41988291578521 # latitude of static location
+position_source:
+  type: static
+  lat: 52
+  lon: 10
+# position_source:
+#   type: dynamic
+#   serial_device: /tmp/gps-simulator
 
 
 log_level: INFO

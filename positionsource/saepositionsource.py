@@ -6,7 +6,7 @@ from prometheus_client import Counter, Histogram, Summary
 from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import PositionMessage
 
-from .config import SaePositionSourceConfig
+from .config import SaePositionSourceConfig, GPSStaticConfig, GPSDynamicConfig
 from .gpsreader import GpsReader
 from .staticreader import StaticReader
 
@@ -37,13 +37,12 @@ class SaePositionSource:
         return self.get(input_proto)
 
     def start(self):
-        logger.debug("Selecting dynamic/static reader " + str(self.config.position_data_source.type))
-        if self.config.position_data_source.type == 'static':
-            self._gps_reader = StaticReader(self.config.position_data_source.gps_source.lat,
-                                            self.config.position_data_source.gps_source.long)
-        if self.config.position_data_source.type == 'dynamic':
-            self._gps_reader = GpsReader(self.config.position_data_source.gps_source.serial_device)
-        logger.debug(self._gps_reader.position)
+        if isinstance(self.config.position_source, GPSStaticConfig):
+            logger.debug("Selecting static GPS reader")
+            self._gps_reader = StaticReader(self.config.position_source.lon, self.config.position_source.lat)
+        if isinstance(self.config.position_source, GPSDynamicConfig):
+            logger.debug("Selecting dynamic GPS reader")
+            self._gps_reader = GpsReader(self.config.position_source.serial_device)
     
     @GET_DURATION.time()
     def get(self, timeout=1) -> Optional[PositionMessage]:
