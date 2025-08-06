@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t starwitorg/sae-sae-position-source:$(git rev-parse --short HEAD) .
+docker build -t starwitorg/sae-position-source:$(git rev-parse --short HEAD) .
