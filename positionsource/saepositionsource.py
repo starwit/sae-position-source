@@ -39,7 +39,7 @@ class SaePositionSource:
     def start(self):
         if isinstance(self.config.position_source, GPSStaticConfig):
             logger.debug("Selecting static GPS reader")
-            self._gps_reader = StaticReader(self.config.position_source.lon, self.config.position_source.lat)
+            self._gps_reader = StaticReader(self.config.position_source.lat, self.config.position_source.lon)
         if isinstance(self.config.position_source, GPSDynamicConfig):
             logger.debug("Selecting dynamic GPS reader")
             self._gps_reader = GpsReader(self.config.position_source.serial_device)
