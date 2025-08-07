@@ -4,7 +4,7 @@ position_source:
   lon: 10
 # position_source:
 #   type: dynamic
-#   serial_device: /tmp/gps-simulator
+#   serial_device: /dev/ttyACM0
 
 
 log_level: INFO
