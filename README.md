@@ -29,10 +29,8 @@ This code employs pydantic-settings for configuration handling. On startup, the 
 
 The `settings.template.yaml` should always reflect a correct and fully fledged settings structure to use as a starting point for users.
 
-## Test GPS reader
-- Make sure you have `gpsd` and `gpsd-clients` installed in your system
-- Run `gpsfake -P 2948 -c 0.1 test_gps.log` (this will start gpsd on port 2948 and feed it the log file lines in 100ms intervals)
-- Use `["gpspipe", "-r, "localhost:2948"]` in your `settings.yaml`
+## Test GPS command reader
+- Use `["bash", "-c", "while IFS= read -r line; do echo \"$line\" | cut -d';' -f2-; sleep 0.1; done < test.log"]` as a command in your `settings.yaml` to feed a log file (with timestamps; remove the cut command if your log file contains just NMEA sentences) in 100ms intervals to the position source
 
 ## Github Workflows and Versioning
 
