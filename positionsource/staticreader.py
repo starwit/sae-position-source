@@ -2,7 +2,7 @@
 import time
 from typing import Optional
 
-from positionsource.gpsreader import GpsPosition
+from .datatypes import GpsPosition
 
 
 class StaticReader:

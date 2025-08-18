@@ -1,6 +1,5 @@
-
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal, Union, List
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,14 +18,18 @@ class GPSStaticConfig(BaseModel):
     lat: float = 0.0
     lon: float = 0.0
 
-class GPSDynamicConfig(BaseModel):
-    type: Literal['dynamic']
+class GPSSerialConfig(BaseModel):
+    type: Literal['serial']
     serial_device: Path
+
+class GPSCommandConfig(BaseModel):
+    type: Literal['command']
+    command: Annotated[List[str], Field(min_length=1)]
 
 class SaePositionSourceConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
-    position_source: Annotated[Union[GPSStaticConfig, GPSDynamicConfig], Field(discriminator='type')]
+    position_source: Annotated[Union[GPSStaticConfig, GPSSerialConfig, GPSCommandConfig], Field(discriminator='type')]
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')
