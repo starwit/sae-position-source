@@ -29,6 +29,9 @@ This code employs pydantic-settings for configuration handling. On startup, the 
 
 The `settings.template.yaml` should always reflect a correct and fully fledged settings structure to use as a starting point for users.
 
+## Test GPS command reader
+- Use `["bash", "-c", "while IFS= read -r line; do echo \"$line\" | cut -d';' -f2-; sleep 0.1; done < test.log"]` as a command in your `settings.yaml` to feed a log file (with timestamps; remove the cut command if your log file contains just NMEA sentences) in 100ms intervals to the position source
+
 ## Github Workflows and Versioning
 
 The following Github Actions are available:

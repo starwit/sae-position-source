@@ -1,23 +1,18 @@
 import time
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import NamedTuple, Optional
+from typing import Optional
 
 import serial
 from pynmeagps import NMEAMessage, NMEAReader
 
+from .datatypes import GpsPosition
 
-class GpsDeviceError(Exception):
+
+class SerialGpsError(Exception):
     pass
 
-class GpsPosition(NamedTuple):
-    fix: bool
-    lat: float
-    lon: float
-    hdop: float
-    timestamp_utc_ms: int
-
-class GpsReader:
+class SerialGpsReader:
     '''This class reads GPS data from a serial device and provides the latest position. It uses a separate thread to read data continuously.
         It needs to be closed properly to release the serial port.'''
     def __init__(self, serial_device: Path):
@@ -51,7 +46,7 @@ class GpsReader:
                         self._current_position = new_position
 
         except serial.SerialException as e:
-            raise GpsDeviceError(f"Serial error: {e}")
+            raise SerialGpsError(f"Serial error: {e}")
 
     @property
     def position(self) -> Optional[GpsPosition]:
@@ -66,4 +61,4 @@ class GpsReader:
         self._stop_event.set()
         self._read_thread.join(timeout=2)
         if self._read_thread.is_alive():
-            raise GpsDeviceError('Could not stop reader thread.')
+            raise SerialGpsError('Could not stop reader thread.')
