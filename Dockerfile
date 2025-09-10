@@ -16,7 +16,8 @@ FROM python:3.12-slim
 RUN apt update && apt install --no-install-recommends -y \
     libglib2.0-0 \
     libgl1 \
-    libturbojpeg0
+    libturbojpeg0 \
+    gpsd-clients
 
 # Create a non-root user and group
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
