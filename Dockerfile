@@ -1,4 +1,4 @@
-FROM starwitorg/base-python-image:0.0.15 AS build
+FROM starwitorg/base-python-image:3.13.1-py3.13-ptr2.1.5 AS build
 
 # Copy only files that are necessary to install dependencies
 COPY poetry.lock poetry.toml pyproject.toml /code/
@@ -12,11 +12,12 @@ COPY . /code/
 
 ### Main artifact / deliverable image
 
-FROM python:3.12-slim
+FROM python:3.13-slim
 RUN apt update && apt install --no-install-recommends -y \
     libglib2.0-0 \
     libgl1 \
-    libturbojpeg0
+    libturbojpeg0 \
+    gpsd-clients
 
 # Create a non-root user and group
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
