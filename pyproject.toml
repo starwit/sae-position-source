@@ -9,13 +9,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "^2.0.0"
+pydantic = "^2.11.9"
 visionapi = { git = "https://github.com/starwit/vision-api.git", subdirectory = "python/visionapi", tag = "3.5.3" }
 visionlib = { git = "https://github.com/starwit/vision-lib.git", subdirectory = "python", tag = "0.14.0" }
 redis = "^5.0.0"
 pydantic-settings = "^2.0.3"
 prometheus-client = ">=0.17.1,<1.0.0"
-pynmeagps = "^1.0.50"
+pynmeagps = "^1.0.52"
 pyserial = "^3.5"
 
 [tool.poetry.group.test.dependencies]
