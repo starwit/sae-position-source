@@ -26,6 +26,7 @@ class SerialGpsReader:
         '''This method runs in a separate thread. Do not call it directly.'''
         try:
             with serial.Serial(str(serial_device), baudrate=9600, timeout=1) as ser:
+                prev_msg_time = None
                 while not stop_event.is_set():
                     line = ser.readline()
                     if not line.startswith(b'$'):
@@ -34,6 +35,12 @@ class SerialGpsReader:
                     nmea: NMEAMessage = NMEAReader.parse(line)
                     if nmea.msgID != 'GGA':
                         continue
+
+                    # Ignore duplicate GGA messages (this has been observed in reality)
+                    if prev_msg_time == nmea.time:
+                        continue
+
+                    prev_msg_time = nmea.time
 
                     new_position = GpsPosition(
                         fix=nmea.quality == 1,

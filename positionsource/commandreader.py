@@ -28,6 +28,7 @@ class CommandGpsReader:
         '''This method runs in a separate thread. Do not call it directly.'''
         try:
             proc = None
+            prev_msg_time = None
             while not stop_event.is_set():
                 if proc is None:
                     proc = subprocess.Popen(args=command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -38,7 +39,7 @@ class CommandGpsReader:
 
                 # Check if the started process is still alive
                 if (ret_code := proc.poll()) is not None:
-                    logger.warning(f'Subprocess has ended with code {ret_code}. Restarting...)')
+                    logger.warning(f'Subprocess has ended with code {ret_code}. Restarting...')
                     self._log_multiline_output(proc.stderr.readlines(), 'stderr', logging.WARNING)
                     proc = None
                     time.sleep(1)
@@ -56,6 +57,12 @@ class CommandGpsReader:
                 nmea: NMEAMessage = NMEAReader.parse(line)
                 if nmea.msgID != 'GGA':
                     continue
+
+                # Ignore duplicate GGA messages (this has been observed in reality)
+                if prev_msg_time == nmea.time:
+                    continue
+
+                prev_msg_time = nmea.time
 
                 new_position = GpsPosition(
                     fix=nmea.quality == 1,
