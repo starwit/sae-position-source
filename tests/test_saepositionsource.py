@@ -3,7 +3,7 @@ from pathlib import Path
 from pynmeagps import NMEAReader, NMEAMessage
 
 def gps_test_log():
-    with open('tests/test_gps.log', 'r') as f:
+    with open('tests/test_data/nmea.log', 'r') as f:
         while len(line := f.readline()) > 0:
             timestamp, nmea_sentence = line.split(';')
             nmea: NMEAMessage = NMEAReader.parse(nmea_sentence)

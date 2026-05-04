@@ -26,10 +26,20 @@ class GPSCommandConfig(BaseModel):
     type: Literal['command']
     command: Annotated[List[str], Field(min_length=1)]
 
+class GPSFilterConfig(BaseModel):
+    enabled: Literal[True]
+    alpha: Annotated[float, Field(ge=0.0, le=1.0)] = 0.70
+    beta: Annotated[float, Field(ge=0.0, le=1.0)] = 0.04
+    spike_radius_m: Annotated[float, Field(ge=0.0)] = 80.0
+
+class GPSFilterConfigDisabled(BaseModel):
+    enabled: Literal[False] = False
+
 class SaePositionSourceConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
-    position_source: Annotated[Union[GPSStaticConfig, GPSSerialConfig, GPSCommandConfig], Field(discriminator='type')]
+    position_source: GPSStaticConfig | GPSSerialConfig | GPSCommandConfig = Field(discriminator='type')
+    gps_filter: GPSFilterConfig | GPSFilterConfigDisabled = Field(discriminator='enabled', default=GPSFilterConfigDisabled())
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')

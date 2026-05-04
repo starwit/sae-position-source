@@ -11,6 +11,8 @@ from .config import (GPSCommandConfig, GPSSerialConfig, GPSStaticConfig,
                      SaePositionSourceConfig)
 from .serialreader import SerialGpsReader
 from .staticreader import StaticReader
+from .datatypes import GpsPosition
+from .filter import GPSFilter, GPSFilterState
 
 logging.basicConfig(format='%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s')
 logger = logging.getLogger(__name__)
@@ -27,6 +29,7 @@ class SaePositionSource:
         logger.setLevel(self.config.log_level.value)
         self._gps_reader = None
         self._previous_position = None
+        self._gps_filter = GPSFilter(alpha=self.config.gps_filter.alpha, beta=self.config.gps_filter.beta, spike_radius_m=self.config.gps_filter.spike_radius_m)
 
     def __enter__(self):
         self.start()
@@ -54,6 +57,28 @@ class SaePositionSource:
         '''This method returns a new PositionMessage if a new GPS position is available.
         If no new position is available before the timeout expires, it returns None.'''
 
+        current_position = self._get_position_reading(timeout=timeout)
+
+        if current_position is None:
+            return None
+        
+        # Only feed filter if we have a valid GPS fix
+        if current_position.fix == True:
+            filter_result = self._gps_filter.update(current_position.lat, current_position.lon, current_position.timestamp_utc_ms)
+
+        logger.debug(current_position)
+        
+        pos_msg = PositionMessage()
+        pos_msg.fix = current_position.fix
+        pos_msg.geo_coordinate.latitude = current_position.lat
+        pos_msg.geo_coordinate.longitude = current_position.lon
+        pos_msg.hdop = current_position.hdop
+        pos_msg.timestamp_utc_ms = current_position.timestamp_utc_ms
+        pos_msg.type = MessageType.POSITION
+
+        return self._pack_proto(pos_msg)
+    
+    def _get_position_reading(self, timeout=1) -> Optional[GpsPosition]:
         if self._gps_reader is None:
             return None
         
@@ -69,22 +94,9 @@ class SaePositionSource:
             time.sleep(0.01)
             current_position = self._gps_reader.position
 
-        if current_position is None or current_position == self._previous_position:
-            return None
-        
         self._previous_position = current_position
-        
-        logger.debug(current_position)
-        
-        pos_msg = PositionMessage()
-        pos_msg.fix = current_position.fix
-        pos_msg.geo_coordinate.latitude = current_position.lat
-        pos_msg.geo_coordinate.longitude = current_position.lon
-        pos_msg.hdop = current_position.hdop
-        pos_msg.timestamp_utc_ms = current_position.timestamp_utc_ms
-        pos_msg.type = MessageType.POSITION
 
-        return self._pack_proto(pos_msg)
+        return current_position
         
     @PROTO_SERIALIZATION_DURATION.time()
     def _pack_proto(self, pos_msg: PositionMessage):
