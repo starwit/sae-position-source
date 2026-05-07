@@ -7,9 +7,8 @@ from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import PositionMessage
 
 from .gps.reader.commandreader import CommandGpsReader
-from .config import (GPSCommandConfig, GPSFilterConfig, GPSSerialConfig, GPSStaticConfig,
+from .config import (GPSCommandConfig, GPSFilterConfig, GPSStaticConfig,
                      SaePositionSourceConfig)
-from .gps.reader.serialreader import SerialGpsReader
 from .gps.reader.staticreader import StaticReader
 from .datatypes import GpsPosition
 from .gps.filter import GPSFilter
@@ -47,9 +46,6 @@ class SaePositionSource:
         if isinstance(self.config.position_source, GPSStaticConfig):
             logger.debug("Selecting static GPS reader")
             self._gps_reader = StaticReader(self.config.position_source.lat, self.config.position_source.lon)
-        if isinstance(self.config.position_source, GPSSerialConfig):
-            logger.debug("Selecting dynamic GPS reader")
-            self._gps_reader = SerialGpsReader(self.config.position_source.serial_device)
         if isinstance(self.config.position_source, GPSCommandConfig):
             logger.debug("Selecting command GPS reader")
             self._gps_reader = CommandGpsReader(self.config.position_source.command)

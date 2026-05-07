@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from positionsource.config import GPSCommandConfig, SaePositionSourceConfig, GPSSerialConfig, GPSStaticConfig, SaePositionSourceConfig
+from positionsource.config import GPSCommandConfig, SaePositionSourceConfig, GPSStaticConfig, SaePositionSourceConfig
 
 def test_full_config():
     config = SaePositionSourceConfig.model_validate_json('''{
@@ -72,14 +72,3 @@ def test_command_reader_config():
 
     assert isinstance(config.position_source, GPSCommandConfig)
     assert config.position_source.command == ["echo", "test"]
-
-def test_serial_reader_config():
-    config = SaePositionSourceConfig.model_validate_json('''{
-        "position_source": {
-            "type": "serial",
-            "serial_device": "/dev/ttyUSB0"
-        }
-    }''')
-
-    assert isinstance(config.position_source, GPSSerialConfig)
-    assert config.position_source.serial_device == Path("/dev/ttyUSB0")
