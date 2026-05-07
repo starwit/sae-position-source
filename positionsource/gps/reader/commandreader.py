@@ -17,8 +17,10 @@ class CommandGpsError(Exception):
 class CommandGpsReader:
     '''This class reads GPS data from a serial device and provides the latest position. It uses a separate thread to read data continuously.
         It needs to be closed properly to release the serial port.'''
-    def __init__(self, command: List[str]):
+    def __init__(self, command: List[str], read_timeout_s: float):
+        self._read_timeout_s = read_timeout_s
         self._stop_event = Event()
+        self._previous_position: GpsPosition = None
         self._current_position: GpsPosition = None
         self._read_thread: Thread = Thread(target=self._gps_read_loop, kwargs={'command': command, 'stop_event': self._stop_event}, daemon=True)
         self._last_position_lock = Lock()
@@ -83,6 +85,24 @@ class CommandGpsReader:
 
     @property
     def position(self) -> Optional[GpsPosition]:
+        '''Gets latest position reading. Blocks until position is updated. Returns None if read_timeout expires while waiting.'''
+        timeout_time = time.time() + self._read_timeout_s
+        
+        position = self._get_position()
+
+        # Retry until either the position changes or the timeout expires
+        while position is None or position == self._previous_position:
+            if time.time() - timeout_time > 0:
+                position = None
+                break
+            time.sleep(0.01)
+            position = self._get_position()
+
+        self._previous_position = position
+
+        return position
+    
+    def _get_position(self) -> Optional[GpsPosition]:
         with self._last_position_lock:
             return self._current_position
         

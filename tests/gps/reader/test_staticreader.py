@@ -4,7 +4,7 @@ from positionsource.gps.reader.staticreader import StaticReader
 
 
 def test_static_reader():
-    reader = StaticReader(lat=52.0, lon=12.0)
+    reader = StaticReader(lat=52.0, lon=12.0, read_interval_s=0.2)
     position = reader.position
     
     assert position is not None
@@ -16,9 +16,8 @@ def test_static_reader():
     reader.close()
 
 def test_monotonic_timestamps():
-    reader = StaticReader(lat=52.0, lon=12.0)
+    reader = StaticReader(lat=52.0, lon=12.0, read_interval_s=0.2)
     position1 = reader.position
-    time.sleep(0.5)  # Wait to ensure the timestamp changes
     position2 = reader.position
     
     assert position1 is not None

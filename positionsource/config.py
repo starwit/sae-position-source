@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Literal, Union, List
+from typing import Literal, List
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,10 +16,12 @@ class GPSStaticConfig(BaseModel):
     type: Literal['static']
     lat: float = 0.0
     lon: float = 0.0
+    read_interval_s: float = 0.5
 
 class GPSCommandConfig(BaseModel):
     type: Literal['command']
     command: Annotated[List[str], Field(min_length=1)]
+    read_timeout_s: float = 2
 
 class GPSFilterConfig(BaseModel):
     enabled: Literal[True]

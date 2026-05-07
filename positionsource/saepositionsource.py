@@ -43,24 +43,40 @@ class SaePositionSource:
         return self.get(input_proto)
 
     def start(self):
-        if isinstance(self.config.position_source, GPSStaticConfig):
+        source_config = self.config.position_source
+        if isinstance(source_config, GPSStaticConfig):
             logger.debug("Selecting static GPS reader")
-            self._gps_reader = StaticReader(self.config.position_source.lat, self.config.position_source.lon)
-        if isinstance(self.config.position_source, GPSCommandConfig):
+            self._gps_reader = StaticReader(
+                lat=source_config.lat, 
+                lon=source_config.lon, 
+                read_interval_s=source_config.read_interval_s
+            )
+        if isinstance(source_config, GPSCommandConfig):
             logger.debug("Selecting command GPS reader")
-            self._gps_reader = CommandGpsReader(self.config.position_source.command)
+            self._gps_reader = CommandGpsReader(
+                command=source_config.command, 
+                read_timeout_s=source_config.read_timeout_s
+            )
     
     @GET_DURATION.time()
-    def get(self, timeout=2) -> Optional[PositionMessage]:
+    def get(self) -> Optional[PositionMessage]:
         '''This method returns a new PositionMessage if a new GPS position is available.
         If no new position is available before the timeout expires, it returns None.'''
 
-        current_position = self._get_position_reading(timeout=timeout)
+        if self._gps_reader is None:
+            return None
+        
+        if not self._gps_reader.is_alive:
+            logger.error('GPS reader thread is not alive')
+            return None
+
+        current_position = self._gps_reader.position
+
+        # Reset the gps filter if there is no position or no fix
+        if self._gps_filter is not None and (current_position is None or current_position.fix == False):
+            self._gps_filter.reset()
 
         if current_position is None:
-            # No position reading available, reset filter to avoid spikes when GPS signal is lost and regained
-            if self._gps_filter is not None:
-                self._gps_filter.reset()
             return None
         
         pos_msg = PositionMessage()
@@ -84,31 +100,8 @@ class SaePositionSource:
             pos_msg.raw_geo_coordinate.longitude = current_position.lon
             pos_msg.hdop = current_position.hdop
 
-        logger.debug(current_position)
-
         return self._pack_proto(pos_msg)
     
-    def _get_position_reading(self, timeout=1) -> Optional[GpsPosition]:
-        if self._gps_reader is None:
-            return None
-        
-        if not self._gps_reader.is_alive:
-            logger.error('GPS reader thread is not alive')
-            return None
-        
-        timeout_time = time.time() + timeout
-        
-        current_position = self._gps_reader.position
-
-        # Retry until either the position changes or the timeout expires
-        while timeout_time - time.time() > 0 and (current_position is None or current_position == self._previous_position):
-            time.sleep(0.01)
-            current_position = self._gps_reader.position
-
-        self._previous_position = current_position
-
-        return current_position
-        
     @PROTO_SERIALIZATION_DURATION.time()
     def _pack_proto(self, pos_msg: PositionMessage):
         return pos_msg.SerializeToString()
