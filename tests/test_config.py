@@ -22,6 +22,7 @@ def test_full_config():
             "beta": 0.05,
             "spike_radius_m": 100.0
         },
+        "gps_read_timeout_s": 3.0,
         "prometheus_port": 9000
     }''')
 
@@ -37,6 +38,7 @@ def test_full_config():
     assert config.gps_filter.alpha == 0.8
     assert config.gps_filter.beta == 0.05
     assert config.gps_filter.spike_radius_m == 100.0
+    assert config.gps_read_timeout_s == 3.0
     assert config.prometheus_port == 9000
 
 def test_minimal_config_defaults():
@@ -57,6 +59,7 @@ def test_minimal_config_defaults():
     assert config.position_source.lat == 52.000
     assert config.position_source.lon == 12.000
     assert config.gps_filter.enabled == False
+    assert config.gps_read_timeout_s == 2.0
     assert config.prometheus_port == 8000
 
 def test_command_reader_config():

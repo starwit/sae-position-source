@@ -9,6 +9,13 @@ position_source:                          # static source outputs the same coord
 #   type: command
 #   command: ["gpspipe", "-r"]            # this is passed to Popen; if you want to use a bash pipeline do ["bash", "-c", "command | command2"]
 
+# gps_read_timeout_s: 2                   # How long the component should wait for a GPS update. Must be larger than configured read interval (e.g. factor 2)
+
+# gps_filter:
+#   enabled: true
+#   alpha: 0.7
+#   beta: 0.04
+#   spike_radius_m: 80
 
 log_level: INFO
 redis:

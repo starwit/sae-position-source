@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pynmeagps import NMEAMessage, NMEAReader
 
-from .datatypes import GpsPosition
+from ...datatypes import GpsPosition
 
 logger = logging.getLogger(__name__)
 

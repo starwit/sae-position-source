@@ -1,5 +1,5 @@
-from positionsource.filter import GPSFilter
-from positionsource.util import distance_m
+from positionsource.gps.filter import GPSFilter
+from positionsource.gps.util import distance_m
 
 
 def _track_iter():

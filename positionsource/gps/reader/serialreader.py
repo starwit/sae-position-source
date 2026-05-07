@@ -6,7 +6,7 @@ from typing import Optional
 import serial
 from pynmeagps import NMEAMessage, NMEAReader
 
-from .datatypes import GpsPosition
+from ...datatypes import GpsPosition
 
 
 class SerialGpsError(Exception):

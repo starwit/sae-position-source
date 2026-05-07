@@ -39,6 +39,7 @@ class SaePositionSourceConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
     position_source: GPSStaticConfig | GPSSerialConfig | GPSCommandConfig = Field(discriminator='type')
+    gps_read_timeout_s: Annotated[float, Field(ge=0.0)] = 2.0
     gps_filter: GPSFilterConfig | GPSFilterConfigDisabled = Field(discriminator='enabled', default=GPSFilterConfigDisabled())
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
