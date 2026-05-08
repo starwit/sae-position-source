@@ -13,6 +13,10 @@ class GPSFilterState(NamedTuple):
 
 
 class GPSFilter:
+    '''
+    An implementation of an alpha-beta filter for GPS position smoothing with additional spike rejection.
+    See: https://en.wikipedia.org/wiki/Alpha-beta_filter
+    '''
     def __init__(
         self,
         alpha=0.75,
