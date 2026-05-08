@@ -1,6 +1,7 @@
 import logging
 import signal
 import threading
+import time
 
 from prometheus_client import Histogram, start_http_server
 from visionlib.pipeline.publisher import RedisPublisher
@@ -37,9 +38,9 @@ def run_stage():
 
     logger.info(f'Starting geo mapper stage. Config: {CONFIG.model_dump_json(indent=2)}')
 
-    publish = RedisPublisher(CONFIG.redis.host, CONFIG.redis.port)
+    publisher_ctx = RedisPublisher(CONFIG.redis.host, CONFIG.redis.port)
     
-    with publish, SaePositionSource(CONFIG) as source:
+    with publisher_ctx as publish, SaePositionSource(CONFIG) as source:
         while True:
             if stop_event.is_set():
                 break
@@ -47,6 +48,7 @@ def run_stage():
             output_proto_data = source.get()
 
             if output_proto_data is None:
+                time.sleep(0.01)
                 continue
             
             with REDIS_PUBLISH_DURATION.time():

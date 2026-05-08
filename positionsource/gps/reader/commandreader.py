@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pynmeagps import NMEAMessage, NMEAReader
 
-from .datatypes import GpsPosition
+from ...datatypes import GpsPosition
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,10 @@ class CommandGpsError(Exception):
 class CommandGpsReader:
     '''This class reads GPS data from a serial device and provides the latest position. It uses a separate thread to read data continuously.
         It needs to be closed properly to release the serial port.'''
-    def __init__(self, command: List[str]):
+    def __init__(self, command: List[str], read_timeout_s: float):
+        self._read_timeout_s = read_timeout_s
         self._stop_event = Event()
+        self._previous_position: GpsPosition = None
         self._current_position: GpsPosition = None
         self._read_thread: Thread = Thread(target=self._gps_read_loop, kwargs={'command': command, 'stop_event': self._stop_event}, daemon=True)
         self._last_position_lock = Lock()
@@ -28,6 +30,7 @@ class CommandGpsReader:
         '''This method runs in a separate thread. Do not call it directly.'''
         try:
             proc = None
+            prev_msg_time = None
             while not stop_event.is_set():
                 if proc is None:
                     proc = subprocess.Popen(args=command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -38,7 +41,7 @@ class CommandGpsReader:
 
                 # Check if the started process is still alive
                 if (ret_code := proc.poll()) is not None:
-                    logger.warning(f'Subprocess has ended with code {ret_code}. Restarting...)')
+                    logger.warning(f'Subprocess has ended with code {ret_code}. Restarting...')
                     self._log_multiline_output(proc.stderr.readlines(), 'stderr', logging.WARNING)
                     proc = None
                     time.sleep(1)
@@ -56,6 +59,12 @@ class CommandGpsReader:
                 nmea: NMEAMessage = NMEAReader.parse(line)
                 if nmea.msgID != 'GGA':
                     continue
+
+                # Ignore duplicate GGA messages (this has been observed in reality)
+                if prev_msg_time == nmea.time:
+                    continue
+
+                prev_msg_time = nmea.time
 
                 new_position = GpsPosition(
                     fix=nmea.quality == 1,
@@ -76,6 +85,24 @@ class CommandGpsReader:
 
     @property
     def position(self) -> Optional[GpsPosition]:
+        '''Gets latest position reading. Blocks until position is updated. Returns None if read_timeout expires while waiting.'''
+        timeout_time = time.time() + self._read_timeout_s
+        
+        position = self._get_position()
+
+        # Retry until either the position changes or the timeout expires
+        while position is None or position == self._previous_position:
+            if time.time() - timeout_time > 0:
+                position = None
+                break
+            time.sleep(0.01)
+            position = self._get_position()
+
+        self._previous_position = position
+
+        return position
+    
+    def _get_position(self) -> Optional[GpsPosition]:
         with self._last_position_lock:
             return self._current_position
         
