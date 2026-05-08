@@ -10,7 +10,7 @@ def distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     
 def ll_to_xy(lat: float, lon: float, origin_lat: float, origin_lon: float) -> Tuple[float, float]:
     """
-    Convert lat/lon to local meters
+    Convert lat/lon to local meters (i.e. distance relative to origin)
     """
     dlat = math.radians(lat - origin_lat)
     dlon = math.radians(lon - origin_lon)
@@ -22,6 +22,9 @@ def ll_to_xy(lat: float, lon: float, origin_lat: float, origin_lon: float) -> Tu
     return x, y
 
 def xy_to_ll(x: float, y: float, origin_lat: float, origin_lon: float) -> Tuple[float, float]:
+    """
+    Convert local meters (i.e. distance relative to origin) to lat/lon
+    """
     lat = origin_lat + math.degrees(y / EARTH_RADIUS)
 
     mean_lat = math.radians((lat + origin_lat) / 2)
