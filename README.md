@@ -43,3 +43,9 @@ The following Github Actions are available:
 ## Dependabot Version Update
 
 With [dependabot.yml](.github/dependabot.yml) a scheduled version update via Dependabot is configured. Dependabot creates a pull request if newer versions are available and the compilation is checked via PR build.
+
+## Changelog
+### 2.0.0
+- Remove serial GPS reader
+- Update `visionapi` to 3.6.0 (extend `PositionMessage`)
+- Add GPS filtering (w/ speed/heading estimate), see `gps_filter` config section
