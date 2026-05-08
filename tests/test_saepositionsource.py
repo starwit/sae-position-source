@@ -3,7 +3,7 @@ from unittest.mock import patch, PropertyMock
 
 from visionapi.sae_pb2 import PositionMessage
 
-from positionsource.config import RedisConfig, SaePositionSourceConfig, GPSStaticConfig
+from positionsource.config import GPSFilterConfig, RedisConfig, SaePositionSourceConfig, GPSStaticConfig
 from positionsource.datatypes import GpsPosition
 from positionsource.saepositionsource import SaePositionSource
 
@@ -87,6 +87,53 @@ def test_no_reading(inject_position_readings, config):
         output = position_source.get()
 
         assert output is None
+
+def test_active_filter(inject_position_readings, config):
+    config.gps_filter = GPSFilterConfig(enabled=True, alpha=0.7, beta=0.04, spike_radius_m=100.0)
+
+    track = [
+        GpsPosition(fix=True, lat=52.40868945371039452, lon=10.780447239674544, hdop=1.0, timestamp_utc_ms=1000),
+        GpsPosition(fix=True, lat=52.40874910760433652, lon=10.78034945034642,  hdop=1.0, timestamp_utc_ms=1200),
+        GpsPosition(fix=True, lat=52.40881591986982452, lon=10.7802594841651,   hdop=1.0, timestamp_utc_ms=1400),
+        GpsPosition(fix=True, lat=52.4088803458874452,  lon=10.780204722141349, hdop=1.0, timestamp_utc_ms=1600),
+        GpsPosition(fix=True, lat=52.4089423856671352,  lon=10.780165606410463, hdop=1.0, timestamp_utc_ms=1800),
+        GpsPosition(fix=True, lat=52.4090020392189652,  lon=10.780142136971563, hdop=1.0, timestamp_utc_ms=2000),
+        GpsPosition(fix=True, lat=52.40904498972642552, lon=10.78013040225295,  hdop=1.0, timestamp_utc_ms=2200),
+        GpsPosition(fix=True, lat=52.40906885110186452, lon=10.780122579106092, hdop=1.0, timestamp_utc_ms=2400),
+        GpsPosition(fix=True, lat=52.4090950985990452,  lon=10.780118667533486, hdop=1.0, timestamp_utc_ms=2600),
+        GpsPosition(fix=True, lat=52.4091261183487552,  lon=10.780118667533486, hdop=1.0, timestamp_utc_ms=2800),
+        GpsPosition(fix=True, lat=52.4091547519448752,  lon=10.780110844387508, hdop=1.0, timestamp_utc_ms=3000),
+        GpsPosition(fix=True, lat=52.40922156359590652, lon=10.780110844387508, hdop=1.0, timestamp_utc_ms=3200),
+        GpsPosition(fix=True, lat=52.4093050780178452,  lon=10.780122579106092, hdop=1.0, timestamp_utc_ms=3400),
+        GpsPosition(fix=True, lat=52.4093766616817652,  lon=10.780149960118393, hdop=1.0, timestamp_utc_ms=3600),
+        GpsPosition(fix=True, lat=52.4094959675306652,  lon=10.780200810568772, hdop=1.0, timestamp_utc_ms=3800),
+    ]
+
+    inject_position_readings(track)
+
+    output_msgs = []
+
+    with SaePositionSource(config) as position_source:
+        for _ in range(len(track)):
+            output_msgs.append(position_source.get())
+
+    # Discard the first reading to let the filter initialize, then check that the following readings are filtered but still approximately correct
+    for gps_position, output in zip(track[1:], output_msgs[1:]):
+
+        assert output is not None
+        msg = _deserialize(output)
+        assert msg.fix == True
+        assert msg.timestamp_utc_ms == gps_position.timestamp_utc_ms
+
+        # Make sure the filter is active by checking that the output coordinates are not exactly the same as the input coordinates, but still approximately correct
+        assert msg.geo_coordinate.latitude != gps_position.lat
+        assert msg.geo_coordinate.longitude != gps_position.lon
+        assert msg.geo_coordinate.latitude == pytest.approx(gps_position.lat, abs=0.0001)
+        assert msg.geo_coordinate.longitude == pytest.approx(gps_position.lon, abs=0.0001)
+
+        # Make sure heading and speed are non zero and within a reasonable range (for the input track)
+        assert 0.0 <= msg.movement_vector.speed_kmh <= 70.0
+        assert 300.0 <= msg.movement_vector.heading_deg <= 360.0
 
 def _deserialize(proto: bytes) -> PositionMessage:
     msg = PositionMessage()
