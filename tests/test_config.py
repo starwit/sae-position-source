@@ -14,7 +14,8 @@ def test_full_config():
         "position_source": {
             "type": "static",
             "lat": 52.000,
-            "lon": 12.000
+            "lon": 12.000,
+            "read_interval_s": 1.0
         },
         "gps_filter": {
             "enabled": true,
@@ -22,7 +23,6 @@ def test_full_config():
             "beta": 0.05,
             "spike_radius_m": 100.0
         },
-        "gps_read_timeout_s": 3.0,
         "prometheus_port": 9000
     }''')
 
@@ -34,11 +34,11 @@ def test_full_config():
     assert isinstance(config.position_source, GPSStaticConfig)
     assert config.position_source.lat == 52.000
     assert config.position_source.lon == 12.000
+    assert config.position_source.read_interval_s == 1.0
     assert config.gps_filter.enabled == True
     assert config.gps_filter.alpha == 0.8
     assert config.gps_filter.beta == 0.05
     assert config.gps_filter.spike_radius_m == 100.0
-    assert config.gps_read_timeout_s == 3.0
     assert config.prometheus_port == 9000
 
 def test_minimal_config_defaults():
@@ -58,8 +58,8 @@ def test_minimal_config_defaults():
     assert isinstance(config.position_source, GPSStaticConfig)
     assert config.position_source.lat == 52.000
     assert config.position_source.lon == 12.000
+    assert config.position_source.read_interval_s == 0.5
     assert config.gps_filter.enabled == False
-    assert config.gps_read_timeout_s == 2.0
     assert config.prometheus_port == 8000
 
 def test_command_reader_config():
@@ -72,3 +72,4 @@ def test_command_reader_config():
 
     assert isinstance(config.position_source, GPSCommandConfig)
     assert config.position_source.command == ["echo", "test"]
+    assert config.position_source.read_timeout_s == 2.0

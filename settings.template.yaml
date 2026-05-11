@@ -2,11 +2,12 @@ position_source:                          # static source outputs the same coord
   type: static
   lat: 52
   lon: 10
+  read_interval_s: 0.5                    # how often a new position message should be generated
 # position_source:                        # command source tries to read NMEA sentences from stdout of given command
 #   type: command
 #   command: ["gpspipe", "-r"]            # this is passed to Popen; if you want to use a bash pipeline do ["bash", "-c", "command | command2"]
+#   read_timeout_s: 2                     # how long until gps is considered to be non available
 
-# gps_read_timeout_s: 2                   # How long the component should wait for a GPS update. Must be larger than effective GPS read interval (e.g. factor 2)
 
 # gps_filter:
 #   enabled: true
