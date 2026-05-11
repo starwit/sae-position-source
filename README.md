@@ -45,7 +45,7 @@ The following Github Actions are available:
 With [dependabot.yml](.github/dependabot.yml) a scheduled version update via Dependabot is configured. Dependabot creates a pull request if newer versions are available and the compilation is checked via PR build.
 
 ## Changelog
-### 2.0.1
+### 2.0.2
 - Remove `gps_read_timeout_s` from config (not needed since 2.0.0)
 
 ### 2.0.0
