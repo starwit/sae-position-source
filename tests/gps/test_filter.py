@@ -10,8 +10,8 @@ def _track_iter():
             yield float(ts), float(lat), float(lon)
 
 
-def test_gps_filter():
-    gps_filter = GPSFilter(alpha=0.7, beta=0.04, spike_radius_m=80.0)
+def test_with_track():
+    gps_filter = GPSFilter(alpha=0.7, beta=0.04)
 
     filtered_positions = []
     

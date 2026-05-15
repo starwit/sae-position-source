@@ -88,8 +88,36 @@ def test_no_reading(inject_position_readings, config):
 
         assert output is None
 
+def test_intermittent_readings_with_filter(inject_position_readings, config):
+    config.gps_filter = GPSFilterConfig(enabled=True, alpha=0.7, beta=0.04)
+
+    inject_position_readings([
+        GpsPosition(fix=True, lat=52.0, lon=13.0, hdop=1.0, timestamp_utc_ms=1000),
+        GpsPosition(fix=False, lat=52.1, lon=13.1, hdop=1.0, timestamp_utc_ms=2000),
+        GpsPosition(fix=True, lat=52.1, lon=13.1, hdop=1.0, timestamp_utc_ms=3000),
+        GpsPosition(fix=True, lat=52.2, lon=13.2, hdop=1.0, timestamp_utc_ms=4000),
+        GpsPosition(fix=True, lat=52.3, lon=13.3, hdop=1.0, timestamp_utc_ms=5000),
+    ])
+
+    with SaePositionSource(config) as position_source:
+        outputs = [position_source.get() for _ in range(5)]
+
+        assert outputs[0] is not None
+        first_msg = _deserialize(outputs[0])
+        assert first_msg.fix == True
+        assert pytest.approx(first_msg.geo_coordinate.latitude, abs=0.005) == 52.0
+        assert pytest.approx(first_msg.geo_coordinate.longitude, abs=0.005) == 13.0
+        assert first_msg.timestamp_utc_ms == 1000
+
+        assert outputs[-1] is not None
+        last_msg = _deserialize(outputs[-1])
+        assert last_msg.fix == True
+        assert pytest.approx(last_msg.geo_coordinate.latitude, abs=0.05) == 52.3
+        assert pytest.approx(last_msg.geo_coordinate.longitude, abs=0.05) == 13.3
+        assert last_msg.timestamp_utc_ms == 5000
+
 def test_active_filter(inject_position_readings, config):
-    config.gps_filter = GPSFilterConfig(enabled=True, alpha=0.7, beta=0.04, spike_radius_m=100.0)
+    config.gps_filter = GPSFilterConfig(enabled=True, alpha=0.7, beta=0.04)
 
     track = [
         GpsPosition(fix=True, lat=52.40868945371039452, lon=10.780447239674544, hdop=1.0, timestamp_utc_ms=1000),

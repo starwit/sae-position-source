@@ -13,7 +13,6 @@ position_source:                          # static source outputs the same coord
 #   enabled: true
 #   alpha: 0.7
 #   beta: 0.04
-#   spike_radius_m: 80
 
 log_level: INFO
 redis:
