@@ -27,7 +27,6 @@ class GPSFilterConfig(BaseModel):
     enabled: Literal[True]
     alpha: Annotated[float, Field(ge=0.0, le=1.0)] = 0.70
     beta: Annotated[float, Field(ge=0.0, le=1.0)] = 0.04
-    spike_radius_m: Annotated[float, Field(ge=0.0)] = 80.0
 
 class GPSFilterConfigDisabled(BaseModel):
     enabled: Literal[False] = False

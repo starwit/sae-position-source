@@ -20,8 +20,7 @@ def test_full_config():
         "gps_filter": {
             "enabled": true,
             "alpha": 0.8,
-            "beta": 0.05,
-            "spike_radius_m": 100.0
+            "beta": 0.05
         },
         "prometheus_port": 9000
     }''')
@@ -38,7 +37,6 @@ def test_full_config():
     assert config.gps_filter.enabled == True
     assert config.gps_filter.alpha == 0.8
     assert config.gps_filter.beta == 0.05
-    assert config.gps_filter.spike_radius_m == 100.0
     assert config.prometheus_port == 9000
 
 def test_minimal_config_defaults():

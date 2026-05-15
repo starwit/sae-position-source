@@ -30,7 +30,7 @@ class SaePositionSource:
         self._previous_position = None
         self._gps_filter = None
         if isinstance(self.config.gps_filter, GPSFilterConfig):
-            self._gps_filter = GPSFilter(alpha=self.config.gps_filter.alpha, beta=self.config.gps_filter.beta, spike_radius_m=self.config.gps_filter.spike_radius_m)
+            self._gps_filter = GPSFilter(alpha=self.config.gps_filter.alpha, beta=self.config.gps_filter.beta)
 
     def __enter__(self):
         self.start()

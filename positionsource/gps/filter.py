@@ -14,19 +14,16 @@ class GPSFilterState(NamedTuple):
 
 class GPSFilter:
     '''
-    An implementation of an alpha-beta filter for GPS position smoothing with additional spike rejection.
+    An implementation of an alpha-beta filter for GPS position smoothing.
     See: https://en.wikipedia.org/wiki/Alpha_beta_filter
     '''
     def __init__(
         self,
         alpha=0.75,
         beta=0.05,
-        spike_radius_m=80.0,
     ):
         self.alpha = alpha
         self.beta = beta
-
-        self.spike_radius_m = spike_radius_m
 
         self._init_params()
 
@@ -40,7 +37,6 @@ class GPSFilter:
         self.vy = 0.0
 
         self.last_t = None
-        self.stop_timer = 0.0
 
     def reset(self):
         self._init_params()
@@ -80,16 +76,6 @@ class GPSFilter:
         # residual
         rx = x_meas - x_pred
         ry = y_meas - y_pred
-
-        residual_dist = math.hypot(rx, ry)
-
-        # ----------------------------
-        # Spike rejection
-        # ----------------------------
-        if residual_dist > self.spike_radius_m:
-            # ignore impossible jump
-            rx = 0.0
-            ry = 0.0
 
         # ----------------------------
         # Correct location and velocity
