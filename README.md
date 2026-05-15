@@ -45,6 +45,9 @@ The following Github Actions are available:
 With [dependabot.yml](.github/dependabot.yml) a scheduled version update via Dependabot is configured. Dependabot creates a pull request if newer versions are available and the compilation is checked via PR build.
 
 ## Changelog
+### 3.0.0
+- Remove spike rejection from gps filter (config option `gps_filter.spike_radius_m` is now obsolete)
+
 ### 2.0.2
 - Remove `gps_read_timeout_s` from config (not needed since 2.0.0)
 
