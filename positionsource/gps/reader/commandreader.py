@@ -67,7 +67,7 @@ class CommandGpsReader:
                 prev_msg_time = nmea.time
 
                 new_position = GpsPosition(
-                    fix=nmea.quality == 1,
+                    fix=nmea.quality >= 1,
                     lat=nmea.lat if nmea.lat != '' else 0,
                     lon=nmea.lon if nmea.lon != '' else 0,
                     hdop=nmea.HDOP if nmea.HDOP != '' else 0,
